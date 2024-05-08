@@ -1,10 +1,12 @@
 const express = require("express")
 const mongoose = require("mongoose")
-const port = 4000
+const userRouter = require("./routes/user")
+require("dotenv").config()
 
+const port = 4000
 const app = express()
 
-mongoose.connect("mongodb://127.0.0.1:27017/E-Buy")
+mongoose.connect(process.env.MONGODB_PATH)
 .then(()=>{
     console.log("Connection Success");
 })
