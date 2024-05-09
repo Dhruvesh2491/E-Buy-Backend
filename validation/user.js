@@ -3,10 +3,32 @@ const joi = require("joi");
 const signupValidationSchema = joi.object({
   name: joi.string().required(),
   email: joi.string().email().required(),
+  role: joi.string().valid("Admin", "User"),
   contactNumber: joi.number().required(),
   password: joi.string().min(8).required(),
   confirmPassword: joi.string().min(8).valid(joi.ref("password")).required(),
-  role: joi.string().valid("admin", "user"),
 });
 
-module.exports = signupValidationSchema;
+const signInValidation = joi.object({
+  email: joi.string().email().required(),
+  password: joi.string().required(),
+});
+
+const resetPasswordValidations = joi.object({
+  email: joi.string().email().required(),
+  password: joi.string().min(8).required(),
+  confirmPassword: joi.string().min(8).required(8),
+});
+
+const editProfileValidation = joi.object({
+  name: joi.string(),
+  email: joi.string().email(),
+  contactNumber: joi.string(),
+});
+
+module.exports = {
+  signupValidationSchema,
+  signInValidation,
+  resetPasswordValidations,
+  editProfileValidation
+};

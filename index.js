@@ -1,20 +1,27 @@
-const express = require("express")
-const mongoose = require("mongoose")
-const userRouter = require("./routes/user")
-require("dotenv").config()
+const express = require("express");
+const mongoose = require("mongoose");
+const userRouter = require("./routes/user");
+const profileRouter = require("./routes/product");
+const dotenv = require("dotenv");
 
-const port = 4000
-const app = express()
+dotenv.config();
 
-mongoose.connect(process.env.MONGODB_PATH)
-.then(()=>{
-    console.log("Connection Success");
-})
-.catch(()=>{
-    console.log("Connection Failed");
-})
+const port = process.env.PORT || 4000;
+const app = express();
 
+app.use(express.json());
+app.use("/profile", userRouter);
+app.use("/product", profileRouter);
 
-app.listen(port,()=>{
-    console.log(`Server is running on ${port}`);
-})
+mongoose
+  .connect("mongodb://127.0.0.1:27017/E-Buy", {
+  })
+  .then(() => {
+    console.log("Connected Successfull");
+    app.listen(port, () => {
+      console.log(`Server is running on ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error("MongoDB connection error:", error);
+  });
