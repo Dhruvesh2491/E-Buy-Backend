@@ -9,7 +9,7 @@ const storage = multer.diskStorage({
     cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
-    const productName = req.body.name.replace(/\s/g, "_"); // Replace spaces with underscores
+    const productName = req.body.name.replace(/\s/g, "_");
     cb(
       null,
        productName + "." + file.originalname.split(".").pop()
@@ -23,5 +23,12 @@ router.post(
   upload.array("images"),
   productController.createProduct
 );
+
+router.get('/product-data', productController.getProduct);
+router.get('/productId/:id', productController.getProductById);
+router.patch('/editProduct/:id', productController.updateProductById);
+router.delete('/deleteProduct/:id', productController.deleteProductById);
+router.get('/search', productController.searchProducts);
+router.get('/filter', productController.filterProducts);
 
 module.exports = router;
