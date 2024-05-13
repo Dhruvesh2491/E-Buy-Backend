@@ -7,5 +7,6 @@ router.post("/signup", userController.signUp);
 router.post("/signin", userController.signIn);
 router.post("/resetPassword", userController.resetPassword);
 router.patch("/editProfile/:userId", userController.editProfile);
+router.get("/email-exists", userController.emailExists);
 
 module.exports = router;

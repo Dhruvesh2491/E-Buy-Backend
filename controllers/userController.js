@@ -37,10 +37,10 @@ const signUp = async (req, res) => {
       return res.status(400).send({ error: error.details[0].message });
     }
 
-    if (req.body.password !== req.body.confirmPassword) {
-      return res
-        .status(400)
-        .send({ message: "Confirm Password does not match Password." });
+    const user = await User.findOne({ email: req.body.email });
+
+    if (user) {
+      return res.status(400).send({ error: "User is Already Exists." });
     }
 
     if (req.body.contactNumber.toString().length !== 10) {
@@ -65,7 +65,6 @@ const signUp = async (req, res) => {
       role: role,
       contactNumber: req.body.contactNumber,
       password: hashedPassword,
-      confirmPassword: hashedPassword,
     });
 
     const mailOptions = {
@@ -83,6 +82,20 @@ const signUp = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Internal Server Error" });
+  }
+};
+
+const emailExists = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.query.email });
+    if (user) {
+      res.json({ exists: true });
+    } else {
+      res.json({ exists: false });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -135,11 +148,6 @@ const resetPassword = async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
       res.status(400).send({ message: "User not found." });
-    }
-    if (req.body.password !== req.body.confirmPassword) {
-      return res
-        .status(400)
-        .send({ message: "Confirm Password does not match Password." });
     }
     const saltRounds = 10;
     const hashedPassword = bcrypt.hashSync(req.body.password, saltRounds);
@@ -196,5 +204,6 @@ module.exports = {
   getData,
   signIn,
   resetPassword,
-  editProfile
+  editProfile,
+  emailExists
 };

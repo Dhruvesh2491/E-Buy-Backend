@@ -25,11 +25,6 @@ const UserSchema = new mongoose.Schema({
     minLength: 8,
     required: true,
   },
-  confirmPassword: {
-    type: String,
-    minLength: 8,
-    required: true,
-  },
 });
 
 const User = mongoose.model("Profile", UserSchema);

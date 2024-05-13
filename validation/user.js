@@ -6,7 +6,6 @@ const signupValidationSchema = joi.object({
   role: joi.string().valid("Admin", "User"),
   contactNumber: joi.number().required(),
   password: joi.string().min(8).required(),
-  confirmPassword: joi.string().min(8).valid(joi.ref("password")).required(),
 });
 
 const signInValidation = joi.object({
@@ -17,7 +16,6 @@ const signInValidation = joi.object({
 const resetPasswordValidations = joi.object({
   email: joi.string().email().required(),
   password: joi.string().min(8).required(),
-  confirmPassword: joi.string().min(8).required(8),
 });
 
 const editProfileValidation = joi.object({

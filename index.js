@@ -3,11 +3,13 @@ const mongoose = require("mongoose");
 const userRouter = require("./routes/user");
 const profileRouter = require("./routes/product");
 const dotenv = require("dotenv");
+const cors = require("cors")
 
 dotenv.config();
 
 const port = process.env.PORT || 4000;
 const app = express();
+app.use(cors())
 
 app.use(express.json());
 app.use("/profile", userRouter);
