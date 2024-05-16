@@ -1,15 +1,18 @@
 const Product = require("../models/product");
+const fs = require("fs");
 
 const createProduct = async (req, res) => {
   try {
-    const { name, description, price, images, category } = req.body;
+    const { displayName, modelName, brandName, description, price, category, subcategory } = req.body;
     const product = new Product({
-      name,
-      brand,
+      displayName,
+      modelName,
+      brandName,
       description,
       price,
-      images,
       category,
+      subcategory,
+      image: req.file.path,
     });
     await product.save();
     res.status(201).json({ message: "Product added successfully", product });
@@ -20,8 +23,8 @@ const createProduct = async (req, res) => {
 
 const getProduct = async (req, res) => {
   try {
-    const product = await Product.find();
-    res.status(200).json(product);
+    const products = await Product.find();
+    res.status(200).json(products);
   } catch (error) {
     res.status(500).send({ message: "Something went wrong" });
   }
@@ -40,24 +43,45 @@ const getProductById = async (req, res) => {
   }
 };
 
-const updateProductById = async (req, res) => {
+const editProduct = async (req, res) => {
   try {
     const productId = req.params.id;
-    const updates = req.body;
-    const options = { new: true }; // to return the updated product
+    const updateData = req.body;
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Check if there's a new image
+    if (req.file) {
+      // Remove the old image file if it exists and is defined
+      if (product.image && fs.existsSync(product.image)) {
+        fs.unlinkSync(product.image);
+      }
+      // Set the new image path
+      updateData.image = req.file.path;
+    }
+
+    // Update the product using findByIdAndUpdate method
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
-      updates,
-      options
+      updateData,
+      { new: true }
     );
+
     if (!updatedProduct) {
       return res.status(404).json({ message: "Product not found" });
     }
-    res.json(updatedProduct);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+
+    res.status(200).json({ message: "Product updated successfully", updatedProduct });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
 
 const deleteProductById = async (req, res) => {
   try {
@@ -78,7 +102,7 @@ const searchProducts = async (req, res) => {
   try {
     const productName = req.query.name;
     const products = await Product.find({
-      name: { $regex: new RegExp(productName, 'i') }
+      displayName: { $regex: new RegExp(productName, 'i') }
     });
     res.json(products);
   } catch (err) {
@@ -93,19 +117,7 @@ const filterProducts = async (req, res) => {
     if (req.query.category) {
       filters.category = req.query.category;
     }
-    if (req.query.brand) {
-      filters.brand = req.query.brand;
-    }
-    if (req.query.size) {
-      filters.size = req.query.size;
-    }
-    if (req.query.minPrice && req.query.maxPrice) {
-      filters.price = { $gte: req.query.minPrice, $lte: req.query.maxPrice };
-    } else if (req.query.minPrice) {
-      filters.price = { $gte: req.query.minPrice };
-    } else if (req.query.maxPrice) {
-      filters.price = { $lte: req.query.maxPrice };
-    }
+    // Add other filter conditions as required
     const products = await Product.find(filters);
     res.json(products);
   } catch (err) {
@@ -117,7 +129,7 @@ module.exports = {
   createProduct,
   getProduct,
   getProductById,
-  updateProductById,
+  editProduct,
   deleteProductById,
   searchProducts,
   filterProducts,

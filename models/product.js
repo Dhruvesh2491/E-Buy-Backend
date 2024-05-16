@@ -1,12 +1,15 @@
-const { required } = require("joi");
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
-  name: {
+  displayName: {
     type: String,
     required: true,
   },
-  brand: {
+  modelName: {
+    type: String,
+    required: true,
+  },
+  brandName: {
     type: String,
     required: true,
   },
@@ -22,7 +25,14 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  images: { data: Buffer, contentType: String },
+  subcategory: {
+    type: String,
+    required: true,
+  },
+  image: {
+    type: String, 
+    required: true,
+  },
 });
 
 const Product = mongoose.model("Product", productSchema);
