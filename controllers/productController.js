@@ -1,9 +1,15 @@
-const Product = require("../models/product");
-const fs = require("fs");
+const { Product } = require("../models/product");
 
 const createProduct = async (req, res) => {
   try {
-    const { displayName, modelName, brandName, description, price, category, subcategory } = req.body;
+    const { displayName, modelName, brandName, description, price, category, subcategory, image } = req.body;
+    if (!displayName || !modelName || !brandName || !description || !price || !category || !subcategory || !image) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Convert Base64 image data to a Buffer
+    const imageBuffer = Buffer.from(image.split(",")[1], 'base64');
+
     const product = new Product({
       displayName,
       modelName,
@@ -12,14 +18,29 @@ const createProduct = async (req, res) => {
       price,
       category,
       subcategory,
-      image: req.file.path,
+      // Convert image buffer to Base64 string
+      image: imageBuffer.toString('base64'),
     });
+
     await product.save();
-    res.status(201).json({ message: "Product added successfully", product });
+
+    // Send the Base64 URL in the response
+    const responseData = {
+      message: "Product added successfully",
+      product: {
+        ...product.toObject(),
+        // Add Base64 URL for the image
+        image: `data:image/jpeg;base64,${product.image}`,
+      }
+    };
+
+    res.status(201).json(responseData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+
 
 const getProduct = async (req, res) => {
   try {
@@ -53,35 +74,17 @@ const editProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Check if there's a new image
-    if (req.file) {
-      // Remove the old image file if it exists and is defined
-      if (product.image && fs.existsSync(product.image)) {
-        fs.unlinkSync(product.image);
-      }
-      // Set the new image path
-      updateData.image = req.file.path;
-    }
+    // Update the product with new data
+    Object.assign(product, updateData);
+    
+    await product.save();
 
-    // Update the product using findByIdAndUpdate method
-    const updatedProduct = await Product.findByIdAndUpdate(
-      productId,
-      updateData,
-      { new: true }
-    );
-
-    if (!updatedProduct) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    res.status(200).json({ message: "Product updated successfully", updatedProduct });
+    res.status(200).json({ message: "Product updated successfully", product });
   } catch (error) {
     console.error("Error updating product:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
 
 const deleteProductById = async (req, res) => {
   try {
@@ -98,6 +101,25 @@ const deleteProductById = async (req, res) => {
   }
 };
 
+const getImageById = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const product = await Product.findById(productId);
+    if (!product || !product.image) {
+      return res.status(404).json({ message: "Image not found" });
+    }
+
+    // Send the image data in the response
+    res.writeHead(200, {
+      'Content-Type': 'image/jpeg',
+      'Content-Length': product.image.length
+    });
+    res.end(product.image);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 const searchProducts = async (req, res) => {
   try {
     const productName = req.query.name;
@@ -109,7 +131,6 @@ const searchProducts = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 const filterProducts = async (req, res) => {
   try {
@@ -133,4 +154,5 @@ module.exports = {
   deleteProductById,
   searchProducts,
   filterProducts,
+  getImageById
 };

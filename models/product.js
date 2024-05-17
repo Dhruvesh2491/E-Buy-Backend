@@ -1,4 +1,5 @@
-const mongoose = require("mongoose");
+const mongoose  = require("mongoose")
+
 
 const productSchema = new mongoose.Schema({
   displayName: {
@@ -30,11 +31,11 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   image: {
-    type: String, 
+    type: String, // Store binary image data
     required: true,
   },
 });
 
-const Product = mongoose.model("Product", productSchema);
+const Product = mongoose.model('Product', productSchema);
 
-module.exports = Product;
+module.exports = { Product };
