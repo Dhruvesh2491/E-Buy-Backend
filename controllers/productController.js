@@ -7,7 +7,6 @@ const createProduct = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Convert Base64 image data to a Buffer
     const imageBuffer = Buffer.from(image.split(",")[1], 'base64');
 
     const product = new Product({
@@ -18,7 +17,6 @@ const createProduct = async (req, res) => {
       price,
       category,
       subcategory,
-      // Convert image buffer to Base64 string
       image: imageBuffer.toString('base64'),
     });
 
@@ -29,7 +27,6 @@ const createProduct = async (req, res) => {
       message: "Product added successfully",
       product: {
         ...product.toObject(),
-        // Add Base64 URL for the image
         image: `data:image/jpeg;base64,${product.image}`,
       }
     };
@@ -108,13 +105,13 @@ const getImageById = async (req, res) => {
     if (!product || !product.image) {
       return res.status(404).json({ message: "Image not found" });
     }
-
-    // Send the image data in the response
+    
+    const imgBuffer = Buffer.from(product.image, 'base64');
     res.writeHead(200, {
       'Content-Type': 'image/jpeg',
-      'Content-Length': product.image.length
+      'Content-Length': imgBuffer.length,
     });
-    res.end(product.image);
+    res.end(imgBuffer);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
