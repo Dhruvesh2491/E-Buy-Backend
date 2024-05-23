@@ -6,7 +6,7 @@ const addressRouter = require("./routes/address");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const stripe = require("stripe")(
-  "sk_test_51PJUIzSFpYIDMRdfSm6WVWRmYyp2E4lxdJ0mEWklzRwdgdMf9IPteYUxqaO4ygk9KJDnxZN38bFo3JyfYfy3EOPW00KT412yez"
+  "sk_test_51PJfJWSCT2RRigEYPRQcSKbdx6V8zNjtRGxb8veMWVJZGRQEaRiIIuJD5P3j1yLO293WDZkv6aLODbrtixxrEUgf00evIUswzf"
 );
 
 dotenv.config();
@@ -21,7 +21,7 @@ app.use("/checkout", addressRouter);
 
 app.post("/create-checkout-session", async (req, res) => {
   console.log("Received request to /create-checkout-session", req.body);
-  
+
   const { products } = req.body;
   const lineItems = products.map((product) => ({
     price_data: {
