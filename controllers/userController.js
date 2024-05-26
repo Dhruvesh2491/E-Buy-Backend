@@ -197,7 +197,7 @@ const editProfile = async (req, res) => {
     console.error(error);
     res.status(500).send({ message: "Something went wrong" });
   }
-}
+};
 
 module.exports = {
   signUp,
