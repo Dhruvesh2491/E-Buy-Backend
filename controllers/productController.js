@@ -132,10 +132,9 @@ const searchProducts = async (req, res) => {
 const filterProducts = async (req, res) => {
   try {
     const filters = {};
-    if (req.query.category) {
-      filters.category = req.query.category;
+    if (req.query.subcategory) {
+      filters.category = req.query.subcategory;
     }
-    // Add other filter conditions as required
     const products = await Product.find(filters);
     res.json(products);
   } catch (err) {
