@@ -76,7 +76,15 @@ const editProduct = async (req, res) => {
     
     await product.save();
 
-    res.status(200).json({ message: "Product updated successfully", product });
+    const responseData = {
+      message: "Product Edited successfully",
+      product: {
+        ...product.toObject(),
+        image: `data:image/jpeg;base64,${product.image}`,
+      }
+    };
+
+    res.status(201).json(responseData);
   } catch (error) {
     console.error("Error updating product:", error);
     res.status(500).json({ message: "Internal server error" });
