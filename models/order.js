@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   order_id: {
     type: String,
     required: true,
@@ -12,7 +17,7 @@ const orderSchema = new mongoose.Schema({
   orderDate: {
     type: Date,
     required: true,
-    default: Date.now,  
+    default: Date.now,
   },
   products: [
     {
