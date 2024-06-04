@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -9,7 +8,6 @@ const auth = (req, res, next) => {
   if (!token || !token.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Authentication required" });
   }
-
 
   const tokenWithoutPrefix = token.replace("Bearer ", "");
 
