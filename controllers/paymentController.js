@@ -3,6 +3,8 @@ const dotenv = require("dotenv");
 const crypto = require("crypto");
 dotenv.config();
 const { Order } = require("../models/order");
+const { Product } = require("../models/product");
+const mongoose = require("mongoose")
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZOR_KEY_ID,
@@ -50,17 +52,43 @@ const paymentVerification = async (req, res) => {
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (isAuthentic) {
-      const newOrder = new Order({
-        user_id: req.user._id,
-        order_id: razorpay_order_id,
-        payment_id: razorpay_payment_id,
-        orderDate: new Date(),
-        products,
-      });
+      const session = await mongoose.startSession();
+      session.startTransaction();
 
-      await newOrder.save();
+      try {
+        const newOrder = new Order({
+          user_id: req.user._id,
+          order_id: razorpay_order_id,
+          payment_id: razorpay_payment_id,
+          orderDate: new Date(),
+          products,
+        });
 
-      res.status(200).json({ message: "Payment verified successfully" });
+        await newOrder.save({ session });
+
+        for (const product of products) {
+          const productDoc = await Product.findById(product._id).session(session);
+          if (!productDoc) {
+            throw new Error(`Product with ID ${product._id} not found`);
+          }
+
+          productDoc.remainingQuantity -= product.quantity;
+          if (productDoc.remainingQuantity < 0) {
+            throw new Error(`Insufficient stock for product ${product.displayName}`);
+          }
+
+          await productDoc.save({ session });
+        }
+
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(200).json({ message: "Payment verified successfully" });
+      } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        throw error;
+      }
     } else {
       res.status(400).json({ message: "Invalid signature" });
     }
@@ -109,4 +137,4 @@ const deleteOrder = async (req, res) => {
   }
 };
 
-module.exports = { checkout, paymentVerification, getUserOrders, razorKey,deleteOrder };
+module.exports = { checkout, paymentVerification, getUserOrders, razorKey, deleteOrder };

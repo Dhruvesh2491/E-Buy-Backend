@@ -36,6 +36,7 @@ const createProduct = async (req, res) => {
       description,
       price,
       quantity,
+      remainingQuantity: quantity, // Initialize remainingQuantity with quantity
       category,
       subcategory,
       image: imageBuffer.toString("base64"),
@@ -57,6 +58,7 @@ const createProduct = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 const getProduct = async (req, res) => {
   try {
@@ -92,6 +94,10 @@ const editProduct = async (req, res) => {
 
     // Update the product with new data
     Object.assign(product, updateData);
+
+    if (updateData.quantity !== undefined) {
+      product.remainingQuantity = updateData.quantity; // Reset remainingQuantity to quantity
+    }
 
     await product.save();
 
