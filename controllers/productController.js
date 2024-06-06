@@ -2,12 +2,32 @@ const { Product } = require("../models/product");
 
 const createProduct = async (req, res) => {
   try {
-    const { displayName, modelName, brandName, description, price, category, subcategory, image } = req.body;
-    if (!displayName || !modelName || !brandName || !description || !price || !category || !subcategory || !image) {
+    const {
+      displayName,
+      modelName,
+      brandName,
+      description,
+      quantity,
+      price,
+      category,
+      subcategory,
+      image,
+    } = req.body;
+    if (
+      !displayName ||
+      !modelName ||
+      !brandName ||
+      !description ||
+      !price ||
+      !quantity ||
+      !category ||
+      !subcategory ||
+      !image
+    ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const imageBuffer = Buffer.from(image.split(",")[1], 'base64');
+    const imageBuffer = Buffer.from(image.split(",")[1], "base64");
 
     const product = new Product({
       displayName,
@@ -15,9 +35,10 @@ const createProduct = async (req, res) => {
       brandName,
       description,
       price,
+      quantity,
       category,
       subcategory,
-      image: imageBuffer.toString('base64'),
+      image: imageBuffer.toString("base64"),
     });
 
     await product.save();
@@ -28,7 +49,7 @@ const createProduct = async (req, res) => {
       product: {
         ...product.toObject(),
         image: `data:image/jpeg;base64,${product.image}`,
-      }
+      },
     };
 
     res.status(201).json(responseData);
@@ -36,8 +57,6 @@ const createProduct = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-
 
 const getProduct = async (req, res) => {
   try {
@@ -73,7 +92,7 @@ const editProduct = async (req, res) => {
 
     // Update the product with new data
     Object.assign(product, updateData);
-    
+
     await product.save();
 
     const responseData = {
@@ -81,7 +100,7 @@ const editProduct = async (req, res) => {
       product: {
         ...product.toObject(),
         image: `data:image/jpeg;base64,${product.image}`,
-      }
+      },
     };
 
     res.status(201).json(responseData);
@@ -113,11 +132,11 @@ const getImageById = async (req, res) => {
     if (!product || !product.image) {
       return res.status(404).json({ message: "Image not found" });
     }
-    
-    const imgBuffer = Buffer.from(product.image, 'base64');
+
+    const imgBuffer = Buffer.from(product.image, "base64");
     res.writeHead(200, {
-      'Content-Type': 'image/jpeg',
-      'Content-Length': imgBuffer.length,
+      "Content-Type": "image/jpeg",
+      "Content-Length": imgBuffer.length,
     });
     res.end(imgBuffer);
   } catch (err) {
@@ -129,7 +148,7 @@ const searchProducts = async (req, res) => {
   try {
     const productName = req.query.name;
     const products = await Product.find({
-      displayName: { $regex: new RegExp(productName, 'i') }
+      displayName: { $regex: new RegExp(productName, "i") },
     });
     res.json(products);
   } catch (err) {
@@ -174,5 +193,5 @@ module.exports = {
   deleteProductById,
   searchProducts,
   filterProducts,
-  getImageById
+  getImageById,
 };

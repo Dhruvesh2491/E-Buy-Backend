@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}))
 app.use("/profile", userRouter);
 app.use("/product", productRouter);
-app.use("/checkout", addressRouter);
+app.use("/address", addressRouter);
 app.use("/payment", paymentRouter);
 app.use('/cart', cartRouter);
 app.use('/wishlist', wishlistRouter);
