@@ -6,6 +6,7 @@ const addressRouter = require("./routes/address");
 const paymentRouter = require("./routes/payment");
 const cartRouter = require('./routes/cart');
 const wishlistRouter = require('./routes/wishlist');
+const invoiceRouter = require('./routes/invoice');
 const dotenv = require("dotenv");
 const cors = require("cors");
 
@@ -25,6 +26,7 @@ app.use("/address", addressRouter);
 app.use("/payment", paymentRouter);
 app.use('/cart', cartRouter);
 app.use('/wishlist', wishlistRouter);
+app.use('/invoice', invoiceRouter);
 
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/E-Buy", {})
