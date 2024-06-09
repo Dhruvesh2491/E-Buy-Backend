@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { generateInvoice } = require('../controllers/invoiceController');
 const auth = require('../middleware/auth');
-const { getInvoiceDetails } = require('../controllers/invoiceController');
 
-router.get('/invoicedata/:orderId', auth, getInvoiceDetails);
+router.get('/generate/:orderId', auth, generateInvoice);
 
 module.exports = router;

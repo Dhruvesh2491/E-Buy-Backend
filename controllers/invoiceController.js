@@ -1,36 +1,72 @@
-const { Order } = require("../models/order");
+const { Order } = require('../models/order');
+const { calculateDiscount } = require('./cartController'); // Adjust path as necessary
 
-const getInvoiceDetails = async (req, res) => {
-    try {
-      const orderId = req.params.orderId; // Ensure order ID is correctly retrieved
-      const order = await Order.findOne({
-        order_id: orderId,
-        user_id: req.user._id,
-      });
-  
-      if (!order) {
-        return res.status(404).json({ error: "Order not found" });
-      }
-  
-      // If the order is found, construct the invoice details and send the response
-      const invoiceDetails = {
-        invoiceNo: order.order_id,
-        name: req.user.name,
-        email: req.user.email,
-        contactNumber: req.user.contactNumber,
-        orderDate: order.orderDate,
-        products: order.products,
-        totalPrice: order.products.reduce(
-          (acc, product) => acc + product.price * product.quantity,
-          0
-        ),
-      };
-  
-      res.status(200).json({ success: true, invoice: invoiceDetails });
-    } catch (error) {
-      console.error("Error fetching invoice details:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+const generateInvoice = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const couponCode = req.query.couponCode; // Assuming coupon code is passed as a query parameter
+    const order = await Order.findById(orderId).populate('user_id');
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
     }
-  };
-  
-  module.exports = { getInvoiceDetails };
+
+    // Extract order details
+    const {
+      user_id: { name, email, contactNumber },
+      orderDate,
+      products
+    } = order;
+
+    const invoiceData = {
+      invoiceNo: orderId, // Using orderId as invoice number
+      name,
+      email,
+      contactNumber,
+      orderDate,
+      products,
+      // Assuming fixed tax rates for example
+      cgst: 9,
+      sgst: 9,
+      totalGst: 18,
+    };
+
+    // Calculate total price and total GST
+    let totalPrice = 0;
+    products.forEach(product => {
+      totalPrice += product.price * product.quantity;
+    });
+    const totalGST = totalPrice * (invoiceData.totalGst / 100);
+    const totalPriceWithGST = totalPrice + totalGST;
+
+    let discountPrice = totalPriceWithGST;
+
+    // Apply discount if coupon code is provided
+    if (couponCode) {
+      const discountResponse = await calculateDiscount({
+        totalPrice: totalPriceWithGST,
+        couponCode
+      });
+      if (discountResponse.success) {
+        discountPrice = discountResponse.discountedPrice;
+      } else {
+        return res.status(400).json({ message: discountResponse.message });
+      }
+    }
+
+    const invoice = {
+      ...invoiceData,
+      totalPrice,
+      totalGST,
+      totalPriceWithGST,
+      discountPrice: discountPrice.toFixed(2),
+    };
+
+    res.status(200).json({ success: true, invoice });
+  } catch (error) {
+    console.error('Error generating invoice:', error.message);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+module.exports = { generateInvoice };
