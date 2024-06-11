@@ -1,13 +1,34 @@
 const express = require("express");
 const router = express.Router();
-const cartController = require("../controllers/cartController");
 const auth = require("../middleware/auth");
 
-router.post("/add-cartitem", auth, cartController.addItem);
-router.get("/cartitem", auth, cartController.getItems);
-router.delete("/remove-cartitem/:productId", auth, cartController.removeItem);
-router.patch("/increase-quantity", auth, cartController.increaseQuantity);
-router.patch("/decrease-quantity", auth, cartController.decreaseQuantity);
-router.post("/calculate-discount", auth, cartController.calculateDiscount);
+const addItemController = require("../controllers/cartControllers/addItem");
+const getItemController = require("../controllers/cartControllers/getItem");
+const removeItemController = require("../controllers/cartControllers/removeItem");
+const cartQuantityController = require("../controllers/cartControllers/cartQuantity");
+const discountPriceController = require("../controllers/cartControllers/discountPrice");
+
+router.post("/add-cartitem", auth, addItemController.addItem);
+router.get("/cartitem", auth, getItemController.getItems);
+router.delete(
+  "/remove-cartitem/:productId",
+  auth,
+  removeItemController.removeItem
+);
+router.patch(
+  "/increase-quantity",
+  auth,
+  cartQuantityController.increaseQuantity
+);
+router.patch(
+  "/decrease-quantity",
+  auth,
+  cartQuantityController.decreaseQuantity
+);
+router.post(
+  "/calculate-discount",
+  auth,
+  discountPriceController.calculateDiscount
+);
 
 module.exports = router;

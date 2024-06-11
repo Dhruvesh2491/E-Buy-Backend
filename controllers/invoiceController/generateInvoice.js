@@ -1,39 +1,37 @@
-const { Order } = require('../models/order');
-const { calculateDiscount } = require('./cartController'); // Adjust path as necessary
+const { Order } = require("../../models/order");
+const { calculateDiscount } = require("../cartControllers/discountPrice");
 
 const generateInvoice = async (req, res) => {
   try {
     const orderId = req.params.orderId;
-    const couponCode = req.query.couponCode; // Assuming coupon code is passed as a query parameter
-    const order = await Order.findById(orderId).populate('user_id');
+    const couponCode = req.query.couponCode; 
+    const order = await Order.findById(orderId).populate("user_id");
 
     if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+      return res.status(404).json({ message: "Order not found" });
     }
 
-    // Extract order details
+   
     const {
       user_id: { name, email, contactNumber },
       orderDate,
-      products
+      products,
     } = order;
 
     const invoiceData = {
-      invoiceNo: orderId, // Using orderId as invoice number
+      invoiceNo: orderId, 
       name,
       email,
       contactNumber,
       orderDate,
       products,
-      // Assuming fixed tax rates for example
       cgst: 9,
       sgst: 9,
       totalGst: 18,
     };
 
-    // Calculate total price and total GST
     let totalPrice = 0;
-    products.forEach(product => {
+    products.forEach((product) => {
       totalPrice += product.price * product.quantity;
     });
     const totalGST = totalPrice * (invoiceData.totalGst / 100);
@@ -45,7 +43,7 @@ const generateInvoice = async (req, res) => {
     if (couponCode) {
       const discountResponse = await calculateDiscount({
         totalPrice: totalPriceWithGST,
-        couponCode
+        couponCode,
       });
       if (discountResponse.success) {
         discountPrice = discountResponse.discountedPrice;
@@ -64,8 +62,8 @@ const generateInvoice = async (req, res) => {
 
     res.status(200).json({ success: true, invoice });
   } catch (error) {
-    console.error('Error generating invoice:', error.message);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error generating invoice:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 

@@ -22,6 +22,7 @@ const editProfileValidation = joi.object({
   name: joi.string(),
   email: joi.string().email(),
   contactNumber: joi.string(),
+  role : joi.string().valid("Admin", "User").optional()
 });
 
 module.exports = {
